@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Forecast - Financial Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-crystal-ball me-2"></i>30-Day Financial Forecast
+        </h1>
+    </div>
+</div>
+
+<!-- Forecast Summary -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card {{ 'border-danger' if forecast.shortfall_detected else 'border-success' }}">
+            <div class="card-header {{ 'bg-danger text-white' if forecast.shortfall_detected else 'bg-success text-white' }}">
+                <h5 class="mb-0">
+                    <i class="fas fa-{{ 'exclamation-triangle' if forecast.shortfall_detected else 'check-circle' }} me-2"></i>
+                    Forecast Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <h6>Current Balance</h6>
+                        <p class="h4 text-primary">P{{ "%.2f"|format(forecast.current_balance) }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>Projected Balance (30 days)</h6>
+                        <p class="h4 text-{{ 'success' if forecast.projected_balance >= 0 else 'danger' }}">P{{ "%.2f"|format(forecast.projected_balance) }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>Average Daily Change</h6>
+                        <p class="h4 text-{{ 'success' if forecast.daily_net_change >= 0 else 'danger' }}">P{{ "%.2f"|format(forecast.daily_net_change) }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>Shortfall Risk</h6>
+                        {% if forecast.shortfall_detected %}
+                            <p class="h4 text-danger">Day {{ forecast.shortfall_day }}</p>
+                            <small class="text-muted">Funds will be depleted</small>
+                        {% else %}
+                            <p class="h4 text-success">Low Risk</p>
+                            <small class="text-muted">No shortfall detected</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Daily Forecast Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>Daily Forecast Breakdown
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Day</th>
+                                <th>Date</th>
+                                <th class="text-end">Projected Income</th>
+                                <th class="text-end">Projected Expenses</th>
+                                <th class="text-end">Daily Net</th>
+                                <th class="text-end">Running Balance</th>
+                                <th class="text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for day_data in forecast.daily_forecast %}
+                            <tr class="{{ 'table-danger' if day_data.running_balance <= 0 else 'table-warning' if day_data.running_balance < 100 else '' }}">
+                                <td>
+                                    <strong>{{ day_data.day }}</strong>
+                                </td>
+                                <td>
+                                    {{ day_data.date|strftime('%b %d, %Y') if day_data.date is string else day_data.date }}
+                                </td>
+                                <td class="text-end text-success">
+                                    +P{{ "%.2f"|format(day_data.projected_income) }}
+                                </td>
+                                <td class="text-end text-danger">
+                                    -P{{ "%.2f"|format(day_data.projected_expenses) }}
+                                </td>
+                                <td class="text-end text-{{ 'success' if day_data.daily_net >= 0 else 'danger' }}">
+                                    {{ '+' if day_data.daily_net >= 0 else '' }}P{{ "%.2f"|format(day_data.daily_net) }}
+                                </td>
+                                <td class="text-end">
+                                    <span class="fw-bold text-{{ 'success' if day_data.running_balance > 100 else 'warning' if day_data.running_balance > 0 else 'danger' }}">
+                                        P{{ "%.2f"|format(day_data.running_balance) }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    {% if day_data.running_balance <= 0 %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>Shortfall
+                                        </span>
+                                    {% elif day_data.running_balance < 100 %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-exclamation-circle me-1"></i>Low Balance
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Safe
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Legend -->
+                <div class="mt-3">
+                    <h6>Legend:</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <span class="badge bg-danger me-2">Shortfall</span>
+                            Balance reaches zero or negative
+                        </div>
+                        <div class="col-md-4">
+                            <span class="badge bg-warning me-2">Low Balance</span>
+                            Balance below P100
+                        </div>
+                        <div class="col-md-4">
+                            <span class="badge bg-success me-2">Safe</span>
+                            Balance above P100
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recommendations -->
+{% if forecast.shortfall_detected %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>Recommendations to Avoid Shortfall
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Increase Income:</h6>
+                        <ul>
+                            <li>Look for additional income sources</li>
+                            <li>Consider freelance work or side projects</li>
+                            <li>Sell unused items</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Reduce Expenses:</h6>
+                        <ul>
+                            <li>Review and cut unnecessary subscriptions</li>
+                            <li>Reduce dining out and entertainment</li>
+                            <li>Postpone non-essential purchases</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

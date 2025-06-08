@@ -1,0 +1,116 @@
+{
+  "name": "FutureAssist - AI Financial Assistant",
+  "short_name": "FutureAssist",
+  "description": "AI-powered financial assistant for Botswana users with irregular income, featuring transaction management, cash flow forecasting, and proactive financial alerts",
+  "version": "1.0.0",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#0a4d68",
+  "background_color": "#F5F7FA",
+  "lang": "en-BW",
+  "dir": "ltr",
+  "categories": ["finance", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/static/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/static/images/screenshot-dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Dashboard view showing balance, transactions, and insights"
+    },
+    {
+      "src": "/static/images/screenshot-mobile.png",
+      "sizes": "375x812",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "Mobile view of transaction management"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add Transaction",
+      "short_name": "Add",
+      "description": "Quickly add a new transaction",
+      "url": "/?action=add-transaction",
+      "icons": [
+        {
+          "src": "/static/icons/icon-192.svg",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "View Forecast",
+      "short_name": "Forecast",
+      "description": "View your cash flow forecast",
+      "url": "/forecast",
+      "icons": [
+        {
+          "src": "/static/icons/icon-192.svg",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "short_name": "Transactions",
+      "description": "Manage your transactions",
+      "url": "/transactions",
+      "icons": [
+        {
+          "src": "/static/icons/icon-192.svg",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "protocol_handlers": [],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
+  "handle_links": "preferred",
+  "id": "futureassist-pwa",
+  "iarc_rating_id": "",
+  "offline_capable": true,
+  "features": [
+    "offline-transactions",
+    "ai-categorization",
+    "cash-flow-forecasting",
+    "proactive-alerts",
+    "accessibility-features"
+  ]
+}

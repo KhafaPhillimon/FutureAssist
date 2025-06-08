@@ -1,0 +1,818 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - FutureAssist{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1>
+                <i class="fas fa-cog me-2 text-primary"></i>
+                Settings & Preferences
+            </h1>
+            <p class="text-muted">Customize FutureAssist to work best for you</p>
+        </div>
+    </div>
+    
+    <!-- Settings Tabs -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="settingsTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="alerts-tab" data-bs-toggle="tab" data-bs-target="#alerts" 
+                                    type="button" role="tab" aria-controls="alerts" aria-selected="true">
+                                <i class="fas fa-bell me-2"></i>Alerts
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="accessibility-tab" data-bs-toggle="tab" data-bs-target="#accessibility" 
+                                    type="button" role="tab" aria-controls="accessibility" aria-selected="false">
+                                <i class="fas fa-universal-access me-2"></i>Accessibility
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="preferences-tab" data-bs-toggle="tab" data-bs-target="#preferences" 
+                                    type="button" role="tab" aria-controls="preferences" aria-selected="false">
+                                <i class="fas fa-user-cog me-2"></i>Preferences
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="about-tab" data-bs-toggle="tab" data-bs-target="#about" 
+                                    type="button" role="tab" aria-controls="about" aria-selected="false">
+                                <i class="fas fa-info-circle me-2"></i>About
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="card-body">
+                    <div class="tab-content" id="settingsTabContent">
+                        
+                        <!-- Alerts Tab -->
+                        <div class="tab-pane fade show active" id="alerts" role="tabpanel" aria-labelledby="alerts-tab">
+                            <h5 class="mb-4">Alert Settings</h5>
+                            
+                            <form id="alertSettingsForm">
+                                <div class="row g-4">
+                                    <!-- Alert Threshold -->
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6 class="card-title">
+                                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                                    Low Balance Threshold
+                                                </h6>
+                                                <p class="card-text text-muted">Get alerts when your balance falls below this amount</p>
+                                                
+                                                <div class="mb-3">
+                                                    <label for="alertThreshold" class="form-label">Threshold Amount (BWP)</label>
+                                                    <input type="number" class="form-control" id="alertThreshold" 
+                                                           min="0" step="10" value="{{ user.alert_threshold if user else 100 }}">
+                                                    <div class="form-text">Recommended: BWP 100-500</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Notification Channels -->
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6 class="card-title">
+                                                    <i class="fas fa-paper-plane text-primary me-2"></i>
+                                                    Notification Channels
+                                                </h6>
+                                                <p class="card-text text-muted">Choose how you want to receive alerts</p>
+                                                
+                                                <div class="form-check mb-3">
+                                                    <input class="form-check-input" type="checkbox" id="webAlerts" checked disabled>
+                                                    <label class="form-check-label" for="webAlerts">
+                                                        <i class="fas fa-globe me-2"></i>Web App Notifications
+                                                        <small class="text-muted d-block">Always enabled</small>
+                                                    </label>
+                                                </div>
+                                                
+                                                <div class="form-check mb-3">
+                                                    <input class="form-check-input" type="checkbox" id="smsAlerts" 
+                                                           {{ 'checked' if user and user.sms_alerts else '' }}>
+                                                    <label class="form-check-label" for="smsAlerts">
+                                                        <i class="fas fa-sms me-2"></i>SMS Alerts
+                                                        <small class="text-muted d-block">Standard SMS rates apply</small>
+                                                    </label>
+                                                </div>
+                                                
+                                                <div class="form-check mb-3">
+                                                    <input class="form-check-input" type="checkbox" id="whatsappAlerts" 
+                                                           {{ 'checked' if user and user.whatsapp_alerts else '' }}>
+                                                    <label class="form-check-label" for="whatsappAlerts">
+                                                        <i class="fab fa-whatsapp me-2"></i>WhatsApp Alerts
+                                                        <small class="text-muted d-block">Coming soon</small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Alert Types -->
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6 class="card-title">
+                                                    <i class="fas fa-list-check text-success me-2"></i>
+                                                    Alert Types
+                                                </h6>
+                                                <p class="card-text text-muted">Choose which types of alerts you want to receive</p>
+                                                
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="shortfallAlerts" checked>
+                                                            <label class="form-check-label" for="shortfallAlerts">
+                                                                <strong>Cash Shortfall Alerts</strong>
+                                                                <small class="text-muted d-block">When your balance may go negative</small>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="col-md-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="lowBalanceAlerts" checked>
+                                                            <label class="form-check-label" for="lowBalanceAlerts">
+                                                                <strong>Low Balance Alerts</strong>
+                                                                <small class="text-muted d-block">When approaching your threshold</small>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="col-md-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="spendingAlerts" checked>
+                                                            <label class="form-check-label" for="spendingAlerts">
+                                                                <strong>High Spending Alerts</strong>
+                                                                <small class="text-muted d-block">When spending increases significantly</small>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="col-md-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="incomeAlerts" checked>
+                                                            <label class="form-check-label" for="incomeAlerts">
+                                                                <strong>Income Pattern Alerts</strong>
+                                                                <small class="text-muted d-block">When income is overdue or irregular</small>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-end mt-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Save Alert Settings
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Accessibility Tab -->
+                        <div class="tab-pane fade" id="accessibility" role="tabpanel" aria-labelledby="accessibility-tab">
+                            <h5 class="mb-4">Accessibility Options</h5>
+                            
+                            <form id="accessibilityForm">
+                                <div class="row g-4">
+                                    <!-- Visual Accessibility -->
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6 class="card-title">
+                                                    <i class="fas fa-eye text-info me-2"></i>
+                                                    Visual Accessibility
+                                                </h6>
+                                                
+                                                <div class="form-check form-switch mb-3">
+                                                    <input class="form-check-input" type="checkbox" id="highContrast" 
+                                                           {{ 'checked' if user and user.high_contrast else '' }}
+                                                           onchange="toggleHighContrast()">
+                                                    <label class="form-check-label" for="highContrast">
+                                                        <strong>High Contrast Mode</strong>
+                                                        <small class="text-muted d-block">Increases color contrast for better visibility</small>
+                                                    </label>
+                                                </div>
+                                                
+                                                <div class="form-check form-switch mb-3">
+                                                    <input class="form-check-input" type="checkbox" id="largeText" 
+                                                           {{ 'checked' if user and user.large_text else '' }}
+                                                           onchange="toggleLargeText()">
+                                                    <label class="form-check-label" for="largeText">
+                                                        <strong>Large Text</strong>
+                                                        <small class="text-muted d-block">Increases font sizes throughout the app</small>
+                                                    </label>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label for="fontSizeSlider" class="form-label">Font Size</label>
+                                                    <input type="range" class="form-range" id="fontSizeSlider" 
+                                                           min="12" max="24" value="16" onchange="updateFontSize(this.value)">
+                                                    <div class="d-flex justify-content-between">
+                                                        <small class="text-muted">Small</small>
+                                                        <small class="text-muted">Large</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Audio & Voice -->
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6 class="card-title">
+                                                    <i class="fas fa-volume-up text-warning me-2"></i>
+                                                    Audio & Voice
+                                                </h6>
+                                                
+                                                <div class="form-check form-switch mb-3">
+                                                    <input class="form-check-input" type="checkbox" id="voiceEnabled" 
+                                                           {{ 'checked' if user and user.voice_enabled else '' }}>
+                                                    <label class="form-check-label" for="voiceEnabled">
+                                                        <strong>Voice Assistance</strong>
+                                                        <small class="text-muted d-block">Enable text-to-speech for important information</small>
+                                                    </label>
+                                                </div>
+                                                
+                                                <div class="form-check form-switch mb-3">
+                                                    <input class="form-check-input" type="checkbox" id="soundEffects" checked>
+                                                    <label class="form-check-label" for="soundEffects">
+                                                        <strong>Sound Effects</strong>
+                                                        <small class="text-muted d-block">Audio feedback for actions and alerts</small>
+                                                    </label>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label for="speechRate" class="form-label">Speech Rate</label>
+                                                    <select class="form-select" id="speechRate">
+                                                        <option value="0.8">Slow</option>
+                                                        <option value="1.0" selected>Normal</option>
+                                                        <option value="1.2">Fast</option>
+                                                    </select>
+                                                </div>
+                                                
+                                                <button type="button" class="btn btn-outline-primary" onclick="testVoice()">
+                                                    <i class="fas fa-play me-2"></i>Test Voice
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Navigation & Input -->
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6 class="card-title">
+                                                    <i class="fas fa-hand-pointer text-success me-2"></i>
+                                                    Navigation & Input
+                                                </h6>
+                                                
+                                                <div class="row g-3">
+                                                    <div class="col-md-4">
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" id="keyboardNav" checked>
+                                                            <label class="form-check-label" for="keyboardNav">
+                                                                <strong>Keyboard Navigation</strong>
+                                                                <small class="text-muted d-block">Navigate using keyboard only</small>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="col-md-4">
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" id="reducedMotion">
+                                                            <label class="form-check-label" for="reducedMotion">
+                                                                <strong>Reduced Motion</strong>
+                                                                <small class="text-muted d-block">Minimize animations and transitions</small>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="col-md-4">
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" id="touchFriendly" checked>
+                                                            <label class="form-check-label" for="touchFriendly">
+                                                                <strong>Touch-Friendly Mode</strong>
+                                                                <small class="text-muted d-block">Larger touch targets</small>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-end mt-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Save Accessibility Settings
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Preferences Tab -->
+                        <div class="tab-pane fade" id="preferences" role="tabpanel" aria-labelledby="preferences-tab">
+                            <h5 class="mb-4">General Preferences</h5>
+                            
+                            <form id="preferencesForm">
+                                <div class="row g-4">
+                                    <!-- Language & Localization -->
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6 class="card-title">
+                                                    <i class="fas fa-globe text-primary me-2"></i>
+                                                    Language & Localization
+                                                </h6>
+                                                
+                                                <div class="mb-3">
+                                                    <label for="language" class="form-label">Language</label>
+                                                    <select class="form-select" id="language">
+                                                        <option value="en" selected>English</option>
+                                                        <option value="tn">Setswana (Coming Soon)</option>
+                                                    </select>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label for="currency" class="form-label">Currency Display</label>
+                                                    <select class="form-select" id="currency">
+                                                        <option value="BWP" selected>Botswana Pula (BWP)</option>
+                                                    </select>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label for="dateFormat" class="form-label">Date Format</label>
+                                                    <select class="form-select" id="dateFormat">
+                                                        <option value="DD/MM/YYYY" selected>DD/MM/YYYY</option>
+                                                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Data & Privacy -->
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6 class="card-title">
+                                                    <i class="fas fa-shield-alt text-success me-2"></i>
+                                                    Data & Privacy
+                                                </h6>
+                                                
+                                                <div class="form-check form-switch mb-3">
+                                                    <input class="form-check-input" type="checkbox" id="dataBackup" checked>
+                                                    <label class="form-check-label" for="dataBackup">
+                                                        <strong>Automatic Backup</strong>
+                                                        <small class="text-muted d-block">Safely store your data</small>
+                                                    </label>
+                                                </div>
+                                                
+                                                <div class="form-check form-switch mb-3">
+                                                    <input class="form-check-input" type="checkbox" id="analytics" checked>
+                                                    <label class="form-check-label" for="analytics">
+                                                        <strong>Usage Analytics</strong>
+                                                        <small class="text-muted d-block">Help us improve FutureAssist</small>
+                                                    </label>
+                                                </div>
+                                                
+                                                <div class="form-check form-switch mb-3">
+                                                    <input class="form-check-input" type="checkbox" id="offlineMode" checked>
+                                                    <label class="form-check-label" for="offlineMode">
+                                                        <strong>Offline Mode</strong>
+                                                        <small class="text-muted d-block">Store data locally when offline</small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- App Behavior -->
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6 class="card-title">
+                                                    <i class="fas fa-cogs text-warning me-2"></i>
+                                                    App Behavior
+                                                </h6>
+                                                
+                                                <div class="row g-3">
+                                                    <div class="col-md-4">
+                                                        <label for="defaultView" class="form-label">Default View</label>
+                                                        <select class="form-select" id="defaultView">
+                                                            <option value="dashboard" selected>Dashboard</option>
+                                                            <option value="transactions">Transactions</option>
+                                                            <option value="forecast">Forecast</option>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                    <div class="col-md-4">
+                                                        <label for="autoRefresh" class="form-label">Auto-refresh Forecasts</label>
+                                                        <select class="form-select" id="autoRefresh">
+                                                            <option value="never">Never</option>
+                                                            <option value="daily" selected>Daily</option>
+                                                            <option value="hourly">Hourly</option>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                    <div class="col-md-4">
+                                                        <label for="transactionsPerPage" class="form-label">Transactions per page</label>
+                                                        <select class="form-select" id="transactionsPerPage">
+                                                            <option value="10">10</option>
+                                                            <option value="20" selected>20</option>
+                                                            <option value="50">50</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-end mt-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Save Preferences
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- About Tab -->
+                        <div class="tab-pane fade" id="about" role="tabpanel" aria-labelledby="about-tab">
+                            <div class="text-center mb-4">
+                                <div class="mb-3">
+                                    <i class="fas fa-chart-line text-primary" style="font-size: 4rem;"></i>
+                                </div>
+                                <h3>FutureAssist</h3>
+                                <p class="lead text-muted">AI-powered financial assistant for Botswana</p>
+                                <p class="text-muted">Version 1.0.0</p>
+                            </div>
+                            
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <i class="fas fa-target text-primary me-2"></i>
+                                                Our Mission
+                                            </h6>
+                                            <p class="card-text">
+                                                FutureAssist helps people in Botswana manage irregular income and plan their finances 
+                                                with AI-powered forecasting and personalized advice.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <i class="fas fa-users text-success me-2"></i>
+                                                Who We Serve
+                                            </h6>
+                                            <p class="card-text">
+                                                Designed specifically for informal workers, students, and anyone with irregular 
+                                                income patterns who need better financial planning tools.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <i class="fas fa-star text-warning me-2"></i>
+                                                Key Features
+                                            </h6>
+                                            <div class="row g-3">
+                                                <div class="col-md-4">
+                                                    <ul class="list-unstyled">
+                                                        <li><i class="fas fa-check text-success me-2"></i>AI Transaction Categorization</li>
+                                                        <li><i class="fas fa-check text-success me-2"></i>Cash Flow Forecasting</li>
+                                                        <li><i class="fas fa-check text-success me-2"></i>Proactive Alerts</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <ul class="list-unstyled">
+                                                        <li><i class="fas fa-check text-success me-2"></i>Mobile-First Design</li>
+                                                        <li><i class="fas fa-check text-success me-2"></i>Offline Capability</li>
+                                                        <li><i class="fas fa-check text-success me-2"></i>Accessibility Features</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <ul class="list-unstyled">
+                                                        <li><i class="fas fa-check text-success me-2"></i>Botswana-Specific Categories</li>
+                                                        <li><i class="fas fa-check text-success me-2"></i>Financial Education</li>
+                                                        <li><i class="fas fa-check text-success me-2"></i>Privacy Protection</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <i class="fas fa-life-ring text-info me-2"></i>
+                                                Support
+                                            </h6>
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-outline-primary" onclick="showHelp()">
+                                                    <i class="fas fa-question-circle me-2"></i>Help Center
+                                                </button>
+                                                <button class="btn btn-outline-info" onclick="showFeedback()">
+                                                    <i class="fas fa-comment me-2"></i>Send Feedback
+                                                </button>
+                                                <button class="btn btn-outline-warning" onclick="reportIssue()">
+                                                    <i class="fas fa-bug me-2"></i>Report Issue
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <i class="fas fa-shield-alt text-success me-2"></i>
+                                                Privacy & Security
+                                            </h6>
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-outline-secondary" onclick="showPrivacyPolicy()">
+                                                    <i class="fas fa-lock me-2"></i>Privacy Policy
+                                                </button>
+                                                <button class="btn btn-outline-secondary" onclick="showTerms()">
+                                                    <i class="fas fa-file-contract me-2"></i>Terms of Service
+                                                </button>
+                                                <button class="btn btn-outline-danger" onclick="exportData()">
+                                                    <i class="fas fa-download me-2"></i>Export My Data
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <p class="text-muted">
+                                    <small>
+                                        Made with <i class="fas fa-heart text-danger"></i> for the people of Botswana<br>
+                                        © 2024 FutureAssist. All rights reserved.
+                                    </small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load current settings
+    loadCurrentSettings();
+    
+    // Setup form handlers
+    setupFormHandlers();
+});
+
+function loadCurrentSettings() {
+    // Load alert settings
+    fetch('/api/alerts/settings')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('alertThreshold').value = data.alert_threshold || 100;
+            document.getElementById('smsAlerts').checked = data.sms_alerts || false;
+            document.getElementById('whatsappAlerts').checked = data.whatsapp_alerts || false;
+        })
+        .catch(error => {
+            console.error('Error loading alert settings:', error);
+        });
+}
+
+function setupFormHandlers() {
+    // Alert settings form
+    document.getElementById('alertSettingsForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveAlertSettings();
+    });
+    
+    // Accessibility form
+    document.getElementById('accessibilityForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveAccessibilitySettings();
+    });
+    
+    // Preferences form
+    document.getElementById('preferencesForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        savePreferences();
+    });
+}
+
+function saveAlertSettings() {
+    const settings = {
+        alert_threshold: parseFloat(document.getElementById('alertThreshold').value),
+        sms_alerts: document.getElementById('smsAlerts').checked,
+        whatsapp_alerts: document.getElementById('whatsappAlerts').checked
+    };
+    
+    fetch('/api/alerts/settings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(settings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            showToast('Alert settings saved successfully!', 'success');
+        } else {
+            showToast(data.error || 'Failed to save settings', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving alert settings:', error);
+        showToast('Failed to save alert settings', 'error');
+    });
+}
+
+function saveAccessibilitySettings() {
+    const settings = {
+        high_contrast: document.getElementById('highContrast').checked,
+        large_text: document.getElementById('largeText').checked,
+        voice_enabled: document.getElementById('voiceEnabled').checked
+    };
+    
+    fetch('/api/accessibility/settings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(settings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            showToast('Accessibility settings saved successfully!', 'success');
+        } else {
+            showToast(data.error || 'Failed to save settings', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving accessibility settings:', error);
+        showToast('Failed to save accessibility settings', 'error');
+    });
+}
+
+function savePreferences() {
+    // For now, just save to localStorage
+    const preferences = {
+        language: document.getElementById('language').value,
+        currency: document.getElementById('currency').value,
+        dateFormat: document.getElementById('dateFormat').value,
+        defaultView: document.getElementById('defaultView').value,
+        autoRefresh: document.getElementById('autoRefresh').value,
+        transactionsPerPage: document.getElementById('transactionsPerPage').value,
+        dataBackup: document.getElementById('dataBackup').checked,
+        analytics: document.getElementById('analytics').checked,
+        offlineMode: document.getElementById('offlineMode').checked
+    };
+    
+    localStorage.setItem('futureassist_preferences', JSON.stringify(preferences));
+    showToast('Preferences saved successfully!', 'success');
+}
+
+function toggleHighContrast() {
+    const body = document.body;
+    const isEnabled = document.getElementById('highContrast').checked;
+    
+    if (isEnabled) {
+        body.classList.add('high-contrast');
+    } else {
+        body.classList.remove('high-contrast');
+    }
+}
+
+function toggleLargeText() {
+    const body = document.body;
+    const isEnabled = document.getElementById('largeText').checked;
+    
+    if (isEnabled) {
+        body.classList.add('large-text');
+    } else {
+        body.classList.remove('large-text');
+    }
+}
+
+function updateFontSize(size) {
+    document.documentElement.style.setProperty('--base-font-size', size + 'px');
+}
+
+function testVoice() {
+    if ('speechSynthesis' in window) {
+        const text = "Hello! This is a test of the voice assistance feature in FutureAssist. You can use this to hear important financial information.";
+        const utterance = new SpeechSynthesisUtterance(text);
+        const rate = parseFloat(document.getElementById('speechRate').value);
+        utterance.rate = rate;
+        speechSynthesis.speak(utterance);
+    } else {
+        showToast('Voice synthesis not supported in this browser', 'warning');
+    }
+}
+
+function showHelp() {
+    showToast('Help Center feature coming soon!', 'info');
+}
+
+function showFeedback() {
+    showToast('Feedback feature coming soon!', 'info');
+}
+
+function reportIssue() {
+    showToast('Issue reporting feature coming soon!', 'info');
+}
+
+function showPrivacyPolicy() {
+    showToast('Privacy Policy feature coming soon!', 'info');
+}
+
+function showTerms() {
+    showToast('Terms of Service feature coming soon!', 'info');
+}
+
+function exportData() {
+    // Get all user data and export as JSON
+    Promise.all([
+        fetch('/api/transactions').then(r => r.json()),
+        fetch('/api/alerts/settings').then(r => r.json())
+    ])
+    .then(([transactions, settings]) => {
+        const userData = {
+            exported_at: new Date().toISOString(),
+            transactions: transactions,
+            alert_settings: settings,
+            preferences: JSON.parse(localStorage.getItem('futureassist_preferences') || '{}')
+        };
+        
+        const blob = new Blob([JSON.stringify(userData, null, 2)], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `futureassist-data-export-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        showToast('Data exported successfully!', 'success');
+    })
+    .catch(error => {
+        console.error('Error exporting data:', error);
+        showToast('Failed to export data', 'error');
+    });
+}
+
+// Load preferences on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const preferences = JSON.parse(localStorage.getItem('futureassist_preferences') || '{}');
+    
+    // Apply saved preferences
+    if (preferences.language) document.getElementById('language').value = preferences.language;
+    if (preferences.currency) document.getElementById('currency').value = preferences.currency;
+    if (preferences.dateFormat) document.getElementById('dateFormat').value = preferences.dateFormat;
+    if (preferences.defaultView) document.getElementById('defaultView').value = preferences.defaultView;
+    if (preferences.autoRefresh) document.getElementById('autoRefresh').value = preferences.autoRefresh;
+    if (preferences.transactionsPerPage) document.getElementById('transactionsPerPage').value = preferences.transactionsPerPage;
+    
+    if (preferences.dataBackup !== undefined) document.getElementById('dataBackup').checked = preferences.dataBackup;
+    if (preferences.analytics !== undefined) document.getElementById('analytics').checked = preferences.analytics;
+    if (preferences.offlineMode !== undefined) document.getElementById('offlineMode').checked = preferences.offlineMode;
+});
+</script>
+{% endblock %}

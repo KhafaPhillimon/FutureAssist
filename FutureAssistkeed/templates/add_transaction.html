@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Add Transaction - Financial Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-plus me-2"></i>Add New Transaction
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else "")) }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.description.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.amount.label(class="form-label") }}
+                                <div class="input-group">
+                                    <span class="input-group-text">P</span>
+                                    {{ form.amount(class="form-control" + (" is-invalid" if form.amount.errors else ""), step="0.01") }}
+                                    {% if form.amount.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.amount.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.transaction_type.label(class="form-label") }}
+                                {{ form.transaction_type(class="form-select" + (" is-invalid" if form.transaction_type.errors else ""), id="transaction_type") }}
+                                {% if form.transaction_type.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.transaction_type.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.category.label(class="form-label") }}
+                        {{ form.category(class="form-select" + (" is-invalid" if form.category.errors else ""), id="category") }}
+                        {% if form.category.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.category.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                                </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Add Transaction
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Quick Tips -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Quick Tips</h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>Select "Income" for money coming in (salary, freelance, gifts)</li>
+                    <li>Select "Expense" for money going out (bills, shopping, dining)</li>
+                    <li>Choose the most appropriate category for better tracking</li>
+                    <li>Be descriptive in your transaction description for future reference</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const transactionType = document.getElementById('transaction_type');
+    const categorySelect = document.getElementById('category');
+    
+    // Define categories for each transaction type
+    const categories = {
+        income: [
+            ['salary', 'Salary'],
+            ['freelance', 'Freelance'],
+            ['investment', 'Investment'],
+            ['gift', 'Gift'],
+            ['other_income', 'Other Income']
+        ],
+        expense: [
+            ['food', 'Food & Dining'],
+            ['transportation', 'Transportation'],
+            ['housing', 'Housing'],
+            ['utilities', 'Utilities'],
+            ['healthcare', 'Healthcare'],
+            ['entertainment', 'Entertainment'],
+            ['shopping', 'Shopping'],
+            ['education', 'Education'],
+            ['insurance', 'Insurance'],
+            ['savings', 'Savings'],
+            ['other_expense', 'Other Expense']
+        ]
+    };
+    
+    function updateCategories() {
+        const selectedType = transactionType.value;
+        const relevantCategories = categories[selectedType] || [];
+        
+        // Clear existing options
+        categorySelect.innerHTML = '';
+        
+        // Add relevant categories
+        relevantCategories.forEach(([value, label]) => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = label;
+            categorySelect.appendChild(option);
+        });
+    }
+    
+    transactionType.addEventListener('change', updateCategories);
+    
+    // Initialize categories on page load
+    updateCategories();
+});
+</script>
+{% endblock %}

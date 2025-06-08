@@ -1,0 +1,268 @@
+FutureAssist Technical Documentation
+
+Overview
+
+FutureAssist is an AI-powered financial assistant designed to be embedded in the FNB banking app. It analyzes irregular income and expense patterns, predicts future cash balances, and proactively alerts users to upcoming shortfalls via multiple channels. The system is specifically optimized for informal workers, students, and low-income users in Botswana.
+
+Core Features
+
+1. Mobile-First Transaction Entry Interface
+
+•
+Responsive design optimized for all screen sizes
+
+•
+Offline capability with local storage
+
+•
+Progressive Web App (PWA) support
+
+•
+Accessibility features for users with low digital literacy
+
+•
+Support for both income and expense transactions
+
+2. Transaction Auto-Categorization
+
+•
+AI-based categorization using keyword matching
+
+•
+Botswana-specific categories and merchants
+
+•
+Manual category override functionality
+
+•
+Confidence scoring and explanation for categorization decisions
+
+•
+Support for both regular and irregular transaction patterns
+
+3. AI Balance Forecasting
+
+•
+Analysis of irregular income patterns
+
+•
+7-30 day cash balance prediction
+
+•
+Optimized for Botswana Pula (BWP) currency
+
+•
+Clear explanations for predictions
+
+•
+Support for both regular and irregular expense patterns
+
+4. Cash Flow Visualization
+
+•
+Interactive balance forecast charts
+
+•
+Expense breakdown visualization
+
+•
+Mobile-optimized data visualization
+
+•
+Explainability features for AI decisions
+
+•
+Support for low-end mobile devices
+
+5. Proactive Alert and Advice System
+
+•
+Shortfall detection algorithm
+
+•
+Multi-channel alerts (SMS, USSD, WhatsApp)
+
+•
+Localized financial advice engine
+
+•
+Skill-building suggestions
+
+•
+Customizable alert thresholds and preferences
+
+6. Accessibility Features
+
+•
+High contrast mode
+
+•
+Text-to-speech functionality
+
+•
+Adjustable font sizes
+
+•
+Keyboard navigation support
+
+•
+Touch-friendly interface
+
+Technical Architecture
+
+Frontend
+
+•
+HTML5, CSS3, and JavaScript
+
+•
+Mobile-first responsive design
+
+•
+Progressive Web App (PWA) capabilities
+
+•
+Chart.js for data visualization
+
+•
+Local storage for offline functionality
+
+Backend
+
+•
+Flask web framework
+
+•
+SQLAlchemy ORM for database operations
+
+•
+MySQL database for data persistence
+
+•
+RESTful API architecture
+
+•
+NumPy and Pandas for data analysis
+
+Database Schema
+
+•
+Users: Stores user information and alert preferences
+
+•
+Transactions: Stores financial transactions with categorization
+
+•
+(Future) Alerts: Would store alert history and user responses
+
+API Endpoints
+
+Transaction API
+
+•
+GET /api/transactions: Get all transactions for a user
+
+•
+POST /api/transactions: Create a new transaction with auto-categorization
+
+•
+PUT /api/transactions/<id>: Update an existing transaction
+
+•
+DELETE /api/transactions/<id>: Delete a transaction
+
+•
+POST /api/categorize: Categorize a transaction description without saving
+
+Forecast API
+
+•
+GET /api/forecast: Generate a forecast for a user
+
+•
+GET /api/forecast/explain: Get a detailed explanation of the forecast
+
+Alert API
+
+•
+GET /api/alerts/settings: Get user alert settings
+
+•
+POST /api/alerts/settings: Update user alert settings
+
+•
+GET /api/alerts/check: Check for alerts based on forecast data
+
+•
+GET /api/alerts/advice: Get financial advice based on alert type
+
+Deployment Instructions
+
+Prerequisites
+
+•
+Python 3.11 or higher
+
+•
+MySQL database
+
+•
+Virtual environment (recommended)
+
+Installation Steps
+
+1.
+Clone the repository
+
+2.
+Create and activate a virtual environment
+
+3.
+Install dependencies: pip install -r requirements.txt
+
+4.
+Configure database connection in src/main.py
+
+5.
+Run the application: python -m src.main
+
+Production Deployment
+
+For production deployment, it is recommended to:
+
+1.
+Use a production WSGI server like Gunicorn
+
+2.
+Set up a reverse proxy with Nginx
+
+3.
+Configure SSL for secure connections
+
+4.
+Set up database backups
+
+5.
+Implement proper logging
+
+Future Enhancements
+
+1.
+Integration with Orange Money, MyZaka, and FNB APIs
+
+2.
+Machine learning model for improved transaction categorization
+
+3.
+Voice input support for feature access
+
+4.
+Enhanced offline functionality
+
+5.
+Multi-language support for broader accessibility
+
+Conclusion
+
+FutureAssist provides a comprehensive solution for financial forecasting and management, specifically designed for users with irregular income patterns in Botswana. Its mobile-first, accessible design ensures usability across a wide range of devices and user capabilities.
+

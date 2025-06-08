@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Financial Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-tachometer-alt me-2"></i>Financial Dashboard
+        </h1>
+    </div>
+</div>
+
+<!-- Alerts Section -->
+{% if alerts %}
+<div class="row mb-4">
+    <div class="col-12">
+        {% for alert in alerts %}
+            {% if alert.type == 'critical' %}
+                <div class="alert alert-danger border-danger border-3 alert-dismissible fade show" style="background-color: #dc2626; color: white; font-weight: bold; animation: pulse 2s infinite;">
+                    <i class="fas fa-exclamation-triangle me-2" style="font-size: 1.2em; color: #fbbf24;"></i>
+                    {{ alert.message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                </div>
+            {% else %}
+                <div class="alert alert-{{ 'danger' if alert.type == 'warning' else 'warning' if alert.type == 'caution' else 'info' }} alert-dismissible fade show">
+                    <i class="fas fa-{{ 'exclamation-triangle' if alert.type == 'warning' else 'exclamation-circle' if alert.type == 'caution' else 'info-circle' }} me-2"></i>
+                    {{ alert.message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50">Current Balance</h6>
+                        <h3 class="text-white mb-0">P{{ "%.2f"|format(current_balance) }}</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-wallet fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50">Monthly Income</h6>
+                        <h3 class="text-white mb-0">P{{ "%.2f"|format(monthly_summary.income) }}</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-arrow-up fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50">Monthly Expenses</h6>
+                        <h3 class="text-white mb-0">P{{ "%.2f"|format(monthly_summary.expenses) }}</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-arrow-down fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-{{ 'success' if monthly_summary.net >= 0 else 'warning' }}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50">Monthly Net</h6>
+                        <h3 class="text-white mb-0">P{{ "%.2f"|format(monthly_summary.net) }}</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-{{ 'chart-line' if monthly_summary.net >= 0 else 'exclamation-triangle' }} fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row mb-4">
+    <div class="col-lg-8 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Balance Trend (Last 30 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="balanceChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Monthly Expenses by Category</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="expenseChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Forecast Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-crystal-ball me-2"></i>30-Day Forecast</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <h6>Current Balance</h6>
+                        <p class="h4 text-primary">P{{ "%.2f"|format(forecast.current_balance) }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>Projected Balance (30 days)</h6>
+                        <p class="h4 text-{{ 'success' if forecast.projected_balance >= 0 else 'danger' }}">P{{ "%.2f"|format(forecast.projected_balance) }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>Daily Net Change</h6>
+                        <p class="h4 text-{{ 'success' if forecast.daily_net_change >= 0 else 'danger' }}">P{{ "%.2f"|format(forecast.daily_net_change) }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>Shortfall Risk</h6>
+                        {% if forecast.shortfall_detected %}
+                            <p class="h4 text-danger">Day {{ forecast.shortfall_day }}</p>
+                            <small class="text-muted">Funds depleted</small>
+                        {% else %}
+                            <p class="h4 text-success">Low Risk</p>
+                            <small class="text-muted">No shortfall detected</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Transactions</h5>
+                <a href="{{ url_for('transactions') }}" class="btn btn-outline-primary btn-sm">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Type</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in recent_transactions %}
+                                <tr>
+                                    <td>{{ transaction.date_created.strftime('%m/%d/%Y') }}</td>
+                                    <td>{{ transaction.description }}</td>
+                                    <td><span class="badge bg-secondary">{{ transaction.category.replace('_', ' ').title() }}</span></td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if transaction.transaction_type == 'income' else 'danger' }}">
+                                            <i class="fas fa-{{ 'arrow-up' if transaction.transaction_type == 'income' else 'arrow-down' }} me-1"></i>
+                                            {{ transaction.transaction_type.title() }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="text-{{ 'success' if transaction.transaction_type == 'income' else 'danger' }}">
+                                            {{ '+' if transaction.transaction_type == 'income' else '-' }}P{{ "%.2f"|format(transaction.amount) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No transactions yet. <a href="{{ url_for('add_transaction') }}">Add your first transaction</a> to get started!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDashboardCharts();
+});
+</script>
+{% endblock %}

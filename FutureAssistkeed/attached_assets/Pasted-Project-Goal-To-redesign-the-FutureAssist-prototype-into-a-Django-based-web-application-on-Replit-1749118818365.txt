@@ -1,0 +1,119 @@
+Project Goal:
+To redesign the "FutureAssist" prototype into a Django-based web application on Replit that accurately tracks income and expenses, displays a live account balance, and intelligently predicts potential financial shortfalls using rule-based logic and basic statistical techniques.
+
+Core Features to Implement:
+
+1. Real-Time Balance Tracking
+
+Functionality: Display current account balance based on all income and expense entries.
+
+Implementation Plan:
+
+Use the Transaction model with fields such as amount, transaction_type, and timestamp.
+
+Query and aggregate income and expenses separately using Django ORM.
+
+Calculate balance as: total_income - total_expenses.
+
+Display on dashboard using Django views and templates.
+
+2. Basic Trend Analysis
+
+Functionality: Calculate and display average income and expenses for the past three months, and detect if user is at risk of a financial shortfall.
+
+Implementation Plan:
+
+Use Django ORM to filter transactions by date.
+
+Calculate:
+
+avg_monthly_income = sum(last_3_months_income) / 3
+avg_monthly_expenses = sum(last_3_months_expenses) / 3
+
+Implement rule:
+
+if avg_monthly_expenses > avg_monthly_income:
+    shortfall_warning = True
+
+Define a low balance threshold (e.g., 20% of avg_monthly_income) and raise alerts when balance falls below it.
+
+3. Rule-Based Pattern Recognition
+
+Functionality: Alert user when unusual financial behavior occurs.
+
+Rules to Implement:
+
+Expense Spike:
+
+if this_month_expenses > 1.5 * avg_monthly_expenses:
+    alert("High spending detected")
+
+Income Delay:
+
+Option A: Create an ExpectedIncome model with user-defined income dates.
+
+Option B: Analyze transaction history to determine usual income timing and detect missing income.
+
+if no_income_transaction_in_past_N_days:
+    alert("Expected income missing")
+
+4. Forecasting Using Moving Averages
+
+Functionality: Predict future shortfalls based on historical data.
+
+Implementation Plan:
+
+Retrieve last 3 expense values and calculate Simple Moving Average (SMA):
+
+sma = sum(last_3_expenses) / 3
+
+Define predicted balance as:
+
+predicted_balance = current_balance + (avg_monthly_income - avg_monthly_expenses)
+
+Alert if:
+
+if predicted_balance - sma < 0:
+    alert("Potential shortfall next month")
+
+Optionally use pandas to calculate rolling means for enhanced predictions.
+
+5. Visual Alerts and Representation
+
+Functionality: Provide dynamic visual feedback to users.
+
+Implementation Plan:
+
+Use Plotly or Chart.js to display:
+
+Monthly income vs expenses
+
+Rolling balance trend
+
+Predicted vs actual balances
+
+Pass data from Django views as JSON and render using JavaScript in templates.
+
+Use conditional rendering in templates to show red flags or warnings:
+
+{% if shortfall_detected %}
+    <div class="alert alert-danger">Shortfall Warning!</div>
+{% endif %}
+
+Tools & Libraries Required:
+
+Backend: Django, Django ORM
+
+Data Processing: Python (built-in), pandas
+
+Frontend: HTML/CSS, JavaScript, Chart.js or Plotly
+
+Deployment: Replit with Django setup
+
+Future Expansion Ideas:
+
+Implement user-customizable budgeting goals
+
+Add category-based expense clustering
+
+Transition to machine learning predictions (Prophet, linear regression, etc.)

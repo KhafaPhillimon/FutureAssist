@@ -1,0 +1,528 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - FutureAssist{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card welcome-card bg-gradient-primary text-white">
+                <div class="card-body">
+                    <h1 class="card-title h3 mb-2">
+                        <i class="fas fa-sun me-2" aria-hidden="true"></i>
+                        Dumela! Welcome to FutureAssist
+                    </h1>
+                    <p class="card-text">Your AI-powered financial assistant for managing irregular income in Botswana</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Balance Overview -->
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card balance-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-wallet text-primary fs-1 mb-3" aria-hidden="true"></i>
+                    <h3 class="card-title">Current Balance</h3>
+                    <h2 class="balance-amount text-{% if balance >= 0 %}success{% else %}danger{% endif %}">
+                        BWP {{ "%.2f"|format(balance|abs) }}
+                    </h2>
+                    {% if balance < 0 %}
+                        <small class="text-danger">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            Negative balance
+                        </small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-trend-up text-success fs-1 mb-3" aria-hidden="true"></i>
+                    <h5 class="card-title">This Month</h5>
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <small class="text-muted">Income</small>
+                            <div class="fw-bold text-success" id="month-income">BWP 0.00</div>
+                        </div>
+                        <div>
+                            <small class="text-muted">Expenses</small>
+                            <div class="fw-bold text-danger" id="month-expenses">BWP 0.00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock text-info fs-1 mb-3" aria-hidden="true"></i>
+                    <h5 class="card-title">Next 7 Days</h5>
+                    <div class="forecast-preview" id="week-forecast">
+                        <div class="text-muted">Loading forecast...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alerts Section -->
+    {% if recent_alerts %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bell text-warning me-2"></i>
+                        Active Alerts
+                    </h5>
+                    <span class="badge bg-warning">{{ recent_alerts|length }}</span>
+                </div>
+                <div class="card-body">
+                    {% for alert in recent_alerts %}
+                    <div class="alert alert-{% if alert.severity == 'critical' %}danger{% elif alert.severity == 'high' %}warning{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-{% if alert.severity == 'critical' %}exclamation-triangle{% elif alert.severity == 'high' %}exclamation-circle{% else %}info-circle{% endif %} me-2 mt-1"></i>
+                            <div class="flex-grow-1">
+                                <strong>{{ alert.alert_type|title }}</strong>
+                                <p class="mb-1">{{ alert.message }}</p>
+                                <small class="text-muted">{{ alert.triggered_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="mb-3">Quick Actions</h4>
+            <div class="row">
+                <div class="col-6 col-md-3 mb-3">
+                    <button class="btn btn-primary btn-lg w-100 h-100 d-flex flex-column align-items-center justify-content-center" 
+                            onclick="showAddTransactionModal()">
+                        <i class="fas fa-plus fs-2 mb-2"></i>
+                        <span>Add Transaction</span>
+                    </button>
+                </div>
+                <div class="col-6 col-md-3 mb-3">
+                    <a href="{{ url_for('forecast') }}" class="btn btn-outline-primary btn-lg w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+                        <i class="fas fa-crystal-ball fs-2 mb-2"></i>
+                        <span>View Forecast</span>
+                    </a>
+                </div>
+                <div class="col-6 col-md-3 mb-3">
+                    <button class="btn btn-outline-secondary btn-lg w-100 h-100 d-flex flex-column align-items-center justify-content-center" 
+                            onclick="checkAlerts()">
+                        <i class="fas fa-search fs-2 mb-2"></i>
+                        <span>Check Alerts</span>
+                    </button>
+                </div>
+                <div class="col-6 col-md-3 mb-3">
+                    <button class="btn btn-outline-info btn-lg w-100 h-100 d-flex flex-column align-items-center justify-content-center" 
+                            onclick="getAdvice()">
+                        <i class="fas fa-lightbulb fs-2 mb-2"></i>
+                        <span>Get Advice</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Transactions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Recent Transactions
+                    </h5>
+                    <a href="{{ url_for('transactions') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_transactions %}
+                        <div class="list-group list-group-flush">
+                            {% for transaction in recent_transactions %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <div class="transaction-icon me-3">
+                                        <i class="fas fa-{% if transaction.is_income %}arrow-up text-success{% else %}arrow-down text-danger{% endif %}"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">{{ transaction.description[:30] }}{% if transaction.description|length > 30 %}...{% endif %}</div>
+                                        <small class="text-muted">
+                                            {{ transaction.category|title if transaction.category }}
+                                            • {{ transaction.transaction_date.strftime('%d %b %Y') }}
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-bold {% if transaction.is_income %}text-success{% else %}text-danger{% endif %}">
+                                        {% if transaction.is_income %}+{% else %}-{% endif %}BWP {{ "%.2f"|format(transaction.amount|abs) }}
+                                    </div>
+                                    {% if transaction.auto_categorized %}
+                                        <small class="text-muted">
+                                            <i class="fas fa-robot me-1"></i>AI categorized
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-receipt text-muted fs-1 mb-3"></i>
+                            <h6 class="text-muted">No transactions yet</h6>
+                            <p class="text-muted">Add your first transaction to get started with forecasting</p>
+                            <button class="btn btn-primary" onclick="showAddTransactionModal()">
+                                <i class="fas fa-plus me-2"></i>Add Transaction
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Insights -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Quick Insights
+                    </h5>
+                </div>
+                <div class="card-body" id="insights-container">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-spinner fa-spin me-2"></i>
+                        Loading insights...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Transaction Modal -->
+<div class="modal fade" id="addTransactionModal" tabindex="-1" aria-labelledby="addTransactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTransactionModalLabel">Add Transaction</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addTransactionForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="transactionType" class="form-label">Type</label>
+                        <select class="form-select" id="transactionType" required>
+                            <option value="">Select type</option>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="transactionAmount" class="form-label">Amount (BWP)</label>
+                        <input type="number" class="form-control" id="transactionAmount" step="0.01" min="0" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="transactionDescription" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="transactionDescription" required 
+                               placeholder="e.g., Salary from work, Groceries at Spar">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="transactionDate" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="transactionDate" required>
+                    </div>
+                    
+                    <div class="mb-3" id="categoryPreview" style="display: none;">
+                        <div class="alert alert-info">
+                            <i class="fas fa-robot me-2"></i>
+                            <strong>AI Suggestion:</strong> <span id="suggestedCategory"></span>
+                            <div class="mt-2">
+                                <small class="text-muted">Confidence: <span id="categoryConfidence"></span>%</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set today's date as default
+    document.getElementById('transactionDate').valueAsDate = new Date();
+    
+    // Load dashboard data
+    loadDashboardData();
+    
+    // Auto-categorize on description change
+    let categorizeTimeout;
+    document.getElementById('transactionDescription').addEventListener('input', function() {
+        clearTimeout(categorizeTimeout);
+        categorizeTimeout = setTimeout(previewCategory, 500);
+    });
+    
+    document.getElementById('transactionType').addEventListener('change', previewCategory);
+    document.getElementById('transactionAmount').addEventListener('input', previewCategory);
+});
+
+function loadDashboardData() {
+    // Load monthly summary
+    loadMonthlySummary();
+    
+    // Load week forecast
+    loadWeekForecast();
+    
+    // Load insights
+    loadInsights();
+}
+
+function loadMonthlySummary() {
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    
+    fetch('/api/transactions')
+        .then(response => response.json())
+        .then(transactions => {
+            let monthIncome = 0;
+            let monthExpenses = 0;
+            
+            transactions.forEach(transaction => {
+                const transDate = new Date(transaction.transaction_date);
+                if (transDate.getMonth() + 1 === currentMonth && transDate.getFullYear() === currentYear) {
+                    if (transaction.is_income) {
+                        monthIncome += transaction.amount;
+                    } else {
+                        monthExpenses += Math.abs(transaction.amount);
+                    }
+                }
+            });
+            
+            document.getElementById('month-income').textContent = `BWP ${monthIncome.toFixed(2)}`;
+            document.getElementById('month-expenses').textContent = `BWP ${monthExpenses.toFixed(2)}`;
+        })
+        .catch(error => {
+            console.error('Error loading monthly summary:', error);
+        });
+}
+
+function loadWeekForecast() {
+    fetch('/api/forecast')
+        .then(response => response.json())
+        .then(data => {
+            const weekForecast = data.daily_forecasts.slice(0, 7);
+            const container = document.getElementById('week-forecast');
+            
+            if (weekForecast.length > 0) {
+                const finalBalance = weekForecast[weekForecast.length - 1].predicted_balance;
+                const balanceClass = finalBalance >= 0 ? 'text-success' : 'text-danger';
+                
+                container.innerHTML = `
+                    <div class="fw-bold ${balanceClass}">BWP ${Math.abs(finalBalance).toFixed(2)}</div>
+                    <small class="text-muted">Predicted balance</small>
+                `;
+            } else {
+                container.innerHTML = '<div class="text-muted">Add transactions for forecast</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading week forecast:', error);
+            document.getElementById('week-forecast').innerHTML = '<div class="text-muted">Unable to load forecast</div>';
+        });
+}
+
+function loadInsights() {
+    fetch('/api/forecast')
+        .then(response => response.json())
+        .then(data => {
+            const insights = data.insights || [];
+            const container = document.getElementById('insights-container');
+            
+            if (insights.length > 0) {
+                container.innerHTML = insights.map(insight => `
+                    <div class="alert alert-${getInsightAlertClass(insight.severity)} mb-2">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-${getInsightIcon(insight.type)} me-2 mt-1"></i>
+                            <div>
+                                <strong>${insight.title}</strong>
+                                <p class="mb-0">${insight.message}</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Add more transactions to get personalized insights
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading insights:', error);
+            document.getElementById('insights-container').innerHTML = '<div class="text-muted">Unable to load insights</div>';
+        });
+}
+
+function getInsightAlertClass(severity) {
+    const map = {
+        'high': 'danger',
+        'medium': 'warning',
+        'low': 'info'
+    };
+    return map[severity] || 'info';
+}
+
+function getInsightIcon(type) {
+    const map = {
+        'warning': 'exclamation-triangle',
+        'info': 'info-circle',
+        'success': 'check-circle'
+    };
+    return map[type] || 'lightbulb';
+}
+
+function showAddTransactionModal() {
+    const modal = new bootstrap.Modal(document.getElementById('addTransactionModal'));
+    modal.show();
+}
+
+function previewCategory() {
+    const description = document.getElementById('transactionDescription').value;
+    const type = document.getElementById('transactionType').value;
+    const amount = document.getElementById('transactionAmount').value;
+    
+    if (!description || !type || !amount) return;
+    
+    const transactionAmount = type === 'income' ? parseFloat(amount) : -parseFloat(amount);
+    
+    fetch('/api/categorize', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            description: description,
+            amount: transactionAmount
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('suggestedCategory').textContent = data.category;
+        document.getElementById('categoryConfidence').textContent = Math.round(data.confidence * 100);
+        document.getElementById('categoryPreview').style.display = 'block';
+    })
+    .catch(error => {
+        console.error('Error categorizing:', error);
+    });
+}
+
+document.getElementById('addTransactionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const type = document.getElementById('transactionType').value;
+    const amount = parseFloat(document.getElementById('transactionAmount').value);
+    const description = document.getElementById('transactionDescription').value;
+    const date = document.getElementById('transactionDate').value;
+    
+    const transactionAmount = type === 'income' ? amount : -amount;
+    
+    fetch('/api/transactions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            amount: transactionAmount,
+            description: description,
+            transaction_date: date + 'T12:00:00'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.id) {
+            showToast('Transaction added successfully!', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('addTransactionModal')).hide();
+            document.getElementById('addTransactionForm').reset();
+            document.getElementById('categoryPreview').style.display = 'none';
+            
+            // Reload dashboard data
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        } else {
+            showToast(data.error || 'Failed to add transaction', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error adding transaction:', error);
+        showToast('Failed to add transaction', 'error');
+    });
+});
+
+function checkAlerts() {
+    showToast('Checking for alerts...', 'info');
+    
+    fetch('/api/alerts/check')
+        .then(response => response.json())
+        .then(alerts => {
+            if (alerts.length > 0) {
+                showToast(`Found ${alerts.length} new alert(s)`, 'warning');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast('No new alerts found', 'success');
+            }
+        })
+        .catch(error => {
+            console.error('Error checking alerts:', error);
+            showToast('Failed to check alerts', 'error');
+        });
+}
+
+function getAdvice() {
+    fetch('/api/alerts/advice?type=general')
+        .then(response => response.json())
+        .then(advice => {
+            // Show advice in a modal or navigate to a dedicated page
+            showAdviceModal(advice);
+        })
+        .catch(error => {
+            console.error('Error getting advice:', error);
+            showToast('Failed to get advice', 'error');
+        });
+}
+
+function showAdviceModal(advice) {
+    // This would show a modal with financial advice
+    // For now, we'll show a toast
+    showToast('Financial advice feature coming soon!', 'info');
+}
+</script>
+{% endblock %}
